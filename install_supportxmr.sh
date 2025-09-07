@@ -33,7 +33,7 @@ cat <<EOF | sudo tee /opt/xmrig/build/config.json > /dev/null
     "pools": [
         {
             "url": "pool.supportxmr.com:3333",
-            "user": "A_TE_MONERO_CIMED",
+            "user": "44MPQAutA7xPRwzMpLimE59tg5FTAtaLQeB3Swg6fxync2B7v7HS9SM1TvkrKvM8xPPNLW6SqRerjDAuPWGr1LBgSQQ4DhH",
             "pass": "$WORKER_NAME",
             "keepalive": true,
             "tls": false
