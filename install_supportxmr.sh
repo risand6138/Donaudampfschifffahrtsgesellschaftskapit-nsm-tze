@@ -1,4 +1,6 @@
-sudo apt update && sudo apt install -y curl util-linux tar
+#!/bin/bash
+sudo apt update
+sudo apt install -y curl util-linux tar
 
 CPU=$(lscpu | grep "Model name" | sed 's/Model name:[ \t]*//;s/ /_/g' | cut -c1-20)
 RAM=$(free -g | awk '/^Mem:/{print $2}')
@@ -7,7 +9,7 @@ WORKER="${CPU}_${RAM}GB_${RAND}"
 echo "Worker név: $WORKER"
 
 cd /opt
-sudo mkdir xmrig && cd xmrig
+sudo mkdir -p xmrig && cd xmrig
 sudo curl -L https://github.com/xmrig/xmrig/releases/download/v6.21.3/xmrig-6.21.3-linux-x64.tar.gz -o xmrig.tar.gz
 sudo tar -xzf xmrig.tar.gz --strip-components=1
 sudo rm xmrig.tar.gz
@@ -48,3 +50,6 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable xmrig
 sudo systemctl start xmrig
+
+echo "✅ Telepítés kész! A miner fut és újraindítás után is indul."
+echo "ℹ️ Log nézet: sudo journalctl -u xmrig -f"
