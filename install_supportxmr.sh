@@ -3,7 +3,7 @@
 # Automatikus worker név generálás + automatikus indulás systemd-vel
 
 # Frissítés és szükséges csomagok telepítése
-sudo apt update && sudo apt upgrade -y
+sudo apt update -y
 sudo apt install -y git build-essential cmake automake libtool autoconf \
     libhwloc-dev libuv1-dev libssl-dev lscpu
 
