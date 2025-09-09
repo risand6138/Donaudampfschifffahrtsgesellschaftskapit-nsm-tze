@@ -1,34 +1,34 @@
 #!/bin/bash
-# XMRig installer for unMineable (XMR payout, SSL, VPS-spec worker name)
-# Uses fixed binary, auto worker name from VPS specs, systemd startup
+# XMRig futtatás unMineable-on (XMR payout, SSL, VPS-spec worker név)
+# Nincs systemd service, a script végén azonnal indul
 
 sudo apt update
 sudo apt install -y curl util-linux tar
 
-# Generate worker name from VPS specs
+# Worker név generálása VPS adatokból
 CPU=$(lscpu | grep "Model name" | sed 's/Model name:[ \t]*//;s/ /_/g' | cut -c1-20)
 RAM=$(free -g | awk '/^Mem:/{print $2}')
 RAND=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 4)
 WORKER="${CPU}_${RAM}GB_${RAND}"
 
-# Your XMR wallet address
+# XMR címed
 ADDRESS="42Jc2bTv3Hr9UrUr2GuSBDPaAAFisxMN76cUmYKHUjSQChCTq3h4dHcFtBiFtUvFovMUCfYQJKGwxVhULQgDrodfGCazwwZ"
 
-# Combine into unMineable user string with referral code
+# unMineable user string referral kóddal
 USER="XMR:${ADDRESS}.${WORKER}#9orn-qafv"
 
-echo "Using wallet: $ADDRESS"
-echo "Worker name: $WORKER"
+echo "Wallet: $ADDRESS"
+echo "Worker: $WORKER"
 
-# Download XMRig (static build)
+# XMRig letöltése
 cd /opt
 sudo mkdir -p xmrig && cd xmrig
 sudo curl -L https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24.0-linux-static-x64.tar.gz -o xmrig.tar.gz
 sudo tar --strip-components=1 -xzf xmrig.tar.gz
 sudo rm xmrig.tar.gz
 
-# Create config for unMineable (SSL)
-cat <<EOF | sudo tee /opt/xmrig/config.json > /dev/null
+# Konfig létrehozása
+cat <<EOF > config.json
 {
   "autosave": true,
   "cpu": true,
@@ -46,27 +46,5 @@ cat <<EOF | sudo tee /opt/xmrig/config.json > /dev/null
 }
 EOF
 
-# systemd service
-cat <<EOF | sudo tee /etc/systemd/system/xmrig.service > /dev/null
-[Unit]
-Description=XMRig CPU Miner (unMineable SSL)
-After=network.target
-
-[Service]
-ExecStart=/opt/xmrig/xmrig
-WorkingDirectory=/opt/xmrig
-Restart=always
-Nice=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Enable and start miner
-sudo systemctl daemon-reload
-sudo systemctl enable xmrig
-sudo systemctl start xmrig
-
-echo "✅ Mining setup complete! Mining on unMineable with SSL and VPS-spec worker name."
-echo "🔍 View stats: https://unmineable.com/coins/XMR/address/$ADDRESS"
-echo "ℹ️ Logs: sudo journalctl -u xmrig -f"
+# Miner indítása azonnal
+./xmrig --config=config.json
