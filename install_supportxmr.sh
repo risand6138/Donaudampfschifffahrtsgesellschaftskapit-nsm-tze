@@ -1,5 +1,5 @@
 #!/bin/bash
-# Plug-and-play XMRig for unMineable (XMR payout, SSL, VPS-spec worker name)
+# Plug-and-play XMRig for unMineable (XMR payout, non-SSL, VPS-spec worker name)
 # No systemd service — runs immediately in foreground
 
 sudo apt update
@@ -27,7 +27,7 @@ sudo curl -L https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24
 sudo tar --strip-components=1 -xzf xmrig.tar.gz
 sudo rm xmrig.tar.gz
 
-# Create config
+# Create config (non-SSL port 3333)
 cat <<EOF > config.json
 {
   "autosave": true,
@@ -36,11 +36,11 @@ cat <<EOF > config.json
   "cuda": false,
   "pools": [
     {
-      "url": "rx.unmineable.com:443",
+      "url": "rx.unmineable.com:3333",
       "user": "$USER",
       "pass": "x",
       "keepalive": true,
-      "tls": true
+      "tls": false
     }
   ]
 }
