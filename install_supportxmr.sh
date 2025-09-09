@@ -1,15 +1,23 @@
 #!/bin/bash
-# Quick XMRig installer for Debian 11/12 - MoneroOcean pool
-# Uses fixed working binary link, auto worker name, systemd startup
+# XMRig installer for unMineable (XMR payout, SSL, VPS-spec worker name)
+# Uses fixed binary, auto worker name from VPS specs, systemd startup
 
 sudo apt update
 sudo apt install -y curl util-linux tar
 
-# Generate worker name (CPU + RAM + random ID)
+# Generate worker name from VPS specs
 CPU=$(lscpu | grep "Model name" | sed 's/Model name:[ \t]*//;s/ /_/g' | cut -c1-20)
 RAM=$(free -g | awk '/^Mem:/{print $2}')
 RAND=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 4)
 WORKER="${CPU}_${RAM}GB_${RAND}"
+
+# Your XMR wallet address
+ADDRESS="42Jc2bTv3Hr9UrUr2GuSBDPaAAFisxMN76cUmYKHUjSQChCTq3h4dHcFtBiFtUvFovMUCfYQJKGwxVhULQgDrodfGCazwwZ"
+
+# Combine into unMineable user string with referral code
+USER="XMR:${ADDRESS}.${WORKER}#9orn-qafv"
+
+echo "Using wallet: $ADDRESS"
 echo "Worker name: $WORKER"
 
 # Download XMRig (static build)
@@ -19,7 +27,7 @@ sudo curl -L https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24
 sudo tar --strip-components=1 -xzf xmrig.tar.gz
 sudo rm xmrig.tar.gz
 
-# Create config for MoneroOcean
+# Create config for unMineable (SSL)
 cat <<EOF | sudo tee /opt/xmrig/config.json > /dev/null
 {
   "autosave": true,
@@ -28,11 +36,11 @@ cat <<EOF | sudo tee /opt/xmrig/config.json > /dev/null
   "cuda": false,
   "pools": [
     {
-      "url": "gulf.moneroocean.stream:10128",
-      "user": "44MPQAutA7xPRwzMpLimE59tg5FTAtaLQeB3Swg6fxync2B7v7HS9SM1TvkrKvM8xPPNLW6SqRerjDAuPWGr1LBgSQQ4DhH",
-      "pass": "$WORKER",
+      "url": "rx.unmineable.com:443",
+      "user": "$USER",
+      "pass": "x",
       "keepalive": true,
-      "tls": false
+      "tls": true
     }
   ]
 }
@@ -41,7 +49,7 @@ EOF
 # systemd service
 cat <<EOF | sudo tee /etc/systemd/system/xmrig.service > /dev/null
 [Unit]
-Description=XMRig Monero Miner (MoneroOcean)
+Description=XMRig CPU Miner (unMineable SSL)
 After=network.target
 
 [Service]
@@ -59,5 +67,6 @@ sudo systemctl daemon-reload
 sudo systemctl enable xmrig
 sudo systemctl start xmrig
 
-echo "✅ Install complete! Mining on MoneroOcean pool."
-echo "ℹ️ View logs: sudo journalctl -u xmrig -f"
+echo "✅ Mining setup complete! Mining on unMineable with SSL and VPS-spec worker name."
+echo "🔍 View stats: https://unmineable.com/coins/XMR/address/$ADDRESS"
+echo "ℹ️ Logs: sudo journalctl -u xmrig -f"
