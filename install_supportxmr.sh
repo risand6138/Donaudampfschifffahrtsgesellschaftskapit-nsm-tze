@@ -1,33 +1,33 @@
 #!/bin/bash
-# XMRig futtatás unMineable-on (XMR payout, SSL, VPS-spec worker név)
-# Nincs systemd service, a script végén azonnal indul
+# Plug-and-play XMRig for unMineable (XMR payout, SSL, VPS-spec worker name)
+# No systemd service — runs immediately in foreground
 
 sudo apt update
 sudo apt install -y curl util-linux tar
 
-# Worker név generálása VPS adatokból
+# Generate worker name from VPS specs
 CPU=$(lscpu | grep "Model name" | sed 's/Model name:[ \t]*//;s/ /_/g' | cut -c1-20)
 RAM=$(free -g | awk '/^Mem:/{print $2}')
 RAND=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 4)
 WORKER="${CPU}_${RAM}GB_${RAND}"
 
-# XMR címed
+# Your XMR wallet address
 ADDRESS="42Jc2bTv3Hr9UrUr2GuSBDPaAAFisxMN76cUmYKHUjSQChCTq3h4dHcFtBiFtUvFovMUCfYQJKGwxVhULQgDrodfGCazwwZ"
 
-# unMineable user string referral kóddal
+# unMineable user string with referral code
 USER="XMR:${ADDRESS}.${WORKER}#9orn-qafv"
 
 echo "Wallet: $ADDRESS"
 echo "Worker: $WORKER"
 
-# XMRig letöltése
+# Download XMRig
 cd /opt
 sudo mkdir -p xmrig && cd xmrig
 sudo curl -L https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24.0-linux-static-x64.tar.gz -o xmrig.tar.gz
 sudo tar --strip-components=1 -xzf xmrig.tar.gz
 sudo rm xmrig.tar.gz
 
-# Konfig létrehozása
+# Create config
 cat <<EOF > config.json
 {
   "autosave": true,
@@ -46,5 +46,5 @@ cat <<EOF > config.json
 }
 EOF
 
-# Miner indítása azonnal
+# Start mining immediately
 ./xmrig --config=config.json
